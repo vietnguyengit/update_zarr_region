@@ -1,5 +1,14 @@
 {
   "store_path":"s3://imos-data-lab-optimised/4428/dummy_argo/",
+  "append_dim":"N_PROF",
+  "dims": [
+    "N_PROF",
+    "N_LEVELS"
+  ],
+  "chunks": {
+    "N_PROF": 500,
+    "N_LEVELS": 800
+  },
   "constants":{
     "data_types":{
       "CONFIG_MISSION_NUMBER":"float32",

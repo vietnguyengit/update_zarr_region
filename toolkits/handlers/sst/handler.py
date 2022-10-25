@@ -11,19 +11,26 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(dir_path, 'config.json'), 'r') as config_file:
     config_data = json.load(config_file)
     STORE_PATH = config_data.get('store_path')
+    APPEND_DIMENSION = config_data.get('append_dim')
+    DIMS = set(config_data.get('dims'))
+    CHUNKS = config_data.get('chunks')
     CONSISTENT_VARS = set(config_data.get('constants')['consistent_vars'])
 
 
 class SST(collections.Dataset):
     def __init__(self, logger):
+        self.chunks = CHUNKS
         self.store_path = STORE_PATH
+        self.append_dim = APPEND_DIMENSION
+        self.dims = DIMS
         self.logger = logger
 
     def processor(self, dataset: xr.Dataset) -> xr.Dataset:
         available_vars = set(dataset.variables)
         to_drop_vars = list(available_vars - CONSISTENT_VARS)
-        processed_ds = dataset.drop_vars(to_drop_vars)
-        return processed_ds
+        data = dataset.drop_vars(to_drop_vars)
+        chunked_ds = data.chunk(chunks=self.chunks)
+        return chunked_ds
 
     def _get_dim_value(self, ds: xr.Dataset) -> str:
         return ds.time.values[0]
@@ -41,5 +48,17 @@ class SST(collections.Dataset):
         except:
             return None
 
+    def generate_empty_ds(self, file_ds: xr.Dataset) -> xr.Dataset:
+        ds = xr.Dataset({var: xr.DataArray(None,
+                                           {'time': file_ds.time.values,
+                                            'lat': range(file_ds.dims['lat']),
+                                            'lon': range(file_ds.dims['lon'])},
+                                           dims=self.dims)
+                         for var in set(file_ds.data_vars) - self.dims})
+        return ds
+
     def get_store_path(self):
         return self.store_path
+
+    def get_append_dim(self):
+        return self.append_dim

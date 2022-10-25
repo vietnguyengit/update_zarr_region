@@ -1,5 +1,16 @@
 {
   "store_path":"s3://imos-data-lab-optimised/4428/dummy_sst/",
+  "append_dim":"time",
+  "dims": [
+    "time",
+    "lat",
+    "lon"
+  ],
+  "chunks": {
+    "time": 1,
+    "lat": 1000,
+    "lon": 1000
+  },
   "constants":{
     "consistent_vars":[
       "time",

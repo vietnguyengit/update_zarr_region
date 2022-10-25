@@ -18,5 +18,13 @@ class Dataset(ABC):
         pass
 
     @abstractmethod
+    def generate_empty_ds(self, file_ds: xr.Dataset) -> xr.Dataset:
+        pass
+
+    @abstractmethod
     def get_store_path(self) -> str:
+        pass
+
+    @abstractmethod
+    def get_append_dim(self) -> str:
         pass

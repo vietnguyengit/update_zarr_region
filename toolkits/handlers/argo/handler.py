@@ -12,13 +12,19 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(dir_path, 'config.json'), 'r') as config_file:
     config_data = json.load(config_file)
     STORE_PATH = config_data.get('store_path')
+    APPEND_DIMENSION = config_data.get('append_dim')
+    DIMS = set(config_data.get('dims'))
+    CHUNKS = config_data.get('chunks')
     DATA_TYPES = config_data.get('constants')['data_types']
     DATA_LEVELS = config_data.get('constants')['data_levels']
 
 
 class Argo(collections.Dataset):
     def __init__(self, logger):
+        self.chunks = CHUNKS
         self.store_path = STORE_PATH
+        self.append_dim = APPEND_DIMENSION
+        self.dims = DIMS
         self.logger = logger
 
     @staticmethod
@@ -72,7 +78,8 @@ class Argo(collections.Dataset):
     def processor(self, dataset: xr.Dataset) -> xr.Dataset:
         preproc = partial(self._process_mf, levels=3000)
         data = preproc(dataset)
-        return data
+        chunked_ds = data.chunk(chunks=self.chunks)
+        return chunked_ds
 
     def _get_dim_value(self, ds: xr.Dataset) -> str:
         return ds.DC_REFERENCE.values[0]
@@ -88,5 +95,16 @@ class Argo(collections.Dataset):
         except:
             return None
 
+    def generate_empty_ds(self, file_ds: xr.Dataset) -> xr.Dataset:
+        ds = xr.Dataset({var: xr.DataArray(None,
+                                           {'N_PROF': file_ds.N_PROF.values,
+                                            'N_LEVELS': range(file_ds.dims['N_LEVELS'])},
+                                           dims=self.dims)
+                         for var in set(file_ds.data_vars) - self.dims})
+        return ds
+
     def get_store_path(self):
         return self.store_path
+
+    def get_append_dim(self):
+        return self.append_dim

@@ -3,7 +3,7 @@ import logging
 from prefect import flow, get_run_logger
 from toolkits.handlers.sst.handler import SST
 from toolkits.handlers.argo.handler import Argo
-from toolkits.utils import read_netcdf, get_zarr_store, overwrite_zarr_region, is_first_write
+from toolkits.utils import *
 
 
 aws_logger = logging.getLogger()
@@ -27,16 +27,21 @@ def update_zarr_store(bucket: str, object_key: str, event_name: str):
 
     if is_first_write(store_path):
         logger.info(f"writing the NetCDF file to the Zarr store")
+        write_zarr(zarr_store, file_ds)
     else:
         region = dataset.get_region_index(zarr_store, file_ds)
         if region is not None:
             if event_name == 'ObjectCreated':
                 logger.info(f"overwriting zarr store region by new NetCDF file")
-                overwrite_zarr_region(zarr_store, file_ds, region)
             else:
                 logger.info(f"removing NetCDF file contents from existing Zarr store")
+                file_ds = dataset.generate_empty_ds(file_ds)
+            overwrite_zarr_region(zarr_store, file_ds, region)
         else:
             logger.info(f"appending NetCDF file to current Zarr store")
+            append_dim = dataset.get_append_dim()
+            append_zarr(zarr_store, file_ds, append_dim)
+
     logger.info("completed!")
 
 
