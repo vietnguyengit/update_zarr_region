@@ -1,0 +1,19 @@
+{
+  "store_path":"s3://imos-data-lab-optimised/4428/dummy_sst/",
+  "constants":{
+    "consistent_vars":[
+      "time",
+      "lat",
+      "lon",
+      "dt_analysis",
+      "l2p_flags",
+      "quality_level",
+      "satellite_zenith_angle",
+      "sea_surface_temperature",
+      "sses_bias",
+      "sses_count",
+      "sses_standard_deviation",
+      "sst_dtime"
+    ]
+  }
+}
