@@ -13,7 +13,7 @@ with open(os.path.join(dir_path, 'config.json'), 'r') as config_file:
     config_data = json.load(config_file)
     STORE_PATH = config_data.get('store_path')
     APPEND_DIMENSION = config_data.get('append_dim')
-    DIMS = set(config_data.get('dims'))
+    DIMS = config_data.get('dims')
     CHUNKS = config_data.get('chunks')
     DATA_TYPES = config_data.get('constants')['data_types']
     DATA_LEVELS = config_data.get('constants')['data_levels']
@@ -100,7 +100,7 @@ class Argo(collections.Dataset):
                                            {'N_PROF': file_ds.N_PROF.values,
                                             'N_LEVELS': range(file_ds.dims['N_LEVELS'])},
                                            dims=self.dims)
-                         for var in set(file_ds.data_vars) - self.dims})
+                         for var in set(file_ds.data_vars) - set(self.dims)})
         return ds
 
     def get_store_path(self):

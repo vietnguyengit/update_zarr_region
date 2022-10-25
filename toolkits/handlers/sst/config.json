@@ -1,5 +1,5 @@
 {
-  "store_path":"s3://imos-data-lab-optimised/4428/dummy_sst/",
+  "store_path":"s3://imos-data-lab-optimised/4428/sst/",
   "append_dim":"time",
   "dims": [
     "time",

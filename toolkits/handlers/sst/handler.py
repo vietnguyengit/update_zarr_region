@@ -12,7 +12,7 @@ with open(os.path.join(dir_path, 'config.json'), 'r') as config_file:
     config_data = json.load(config_file)
     STORE_PATH = config_data.get('store_path')
     APPEND_DIMENSION = config_data.get('append_dim')
-    DIMS = set(config_data.get('dims'))
+    DIMS = config_data.get('dims')
     CHUNKS = config_data.get('chunks')
     CONSISTENT_VARS = set(config_data.get('constants')['consistent_vars'])
 
@@ -54,7 +54,7 @@ class SST(collections.Dataset):
                                             'lat': range(file_ds.dims['lat']),
                                             'lon': range(file_ds.dims['lon'])},
                                            dims=self.dims)
-                         for var in set(file_ds.data_vars) - self.dims})
+                         for var in set(file_ds.data_vars) - set(self.dims)})
         return ds
 
     def get_store_path(self):

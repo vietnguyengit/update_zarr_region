@@ -1,5 +1,5 @@
 {
-  "store_path":"s3://imos-data-lab-optimised/4428/dummy_argo/",
+  "store_path":"s3://imos-data-lab-optimised/4428/argo/",
   "append_dim":"N_PROF",
   "dims": [
     "N_PROF",
