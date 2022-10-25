@@ -14,7 +14,7 @@ class Dataset(ABC):
         pass
 
     @abstractmethod
-    def get_region_index(self, zarr_store: fsspec.FSMap, file_ds: xr.Dataset) -> Union[dict[str, slice], None]:
+    def get_zarr_region(self, zarr_store: fsspec.FSMap, file_ds: xr.Dataset) -> Union[dict[str, slice], None]:
         pass
 
     @abstractmethod

@@ -29,7 +29,7 @@ def update_zarr_store(bucket: str, object_key: str, event_name: str):
         logger.info(f"writing the NetCDF file to the Zarr store")
         write_zarr(zarr_store, file_ds)
     else:
-        region = dataset.get_region_index(zarr_store, file_ds)
+        region = dataset.get_zarr_region(zarr_store, file_ds)
         if region is not None:
             if event_name == 'ObjectCreated':
                 logger.info(f"overwriting zarr store region by new NetCDF file")
@@ -59,9 +59,10 @@ def handler(event, context):
 
 # FOR LOCAL DEV
 if __name__ == '__main__':
-    # bucket = 'imos-data'
-    # object_key = 'IMOS/SRS/SST/ghrsst/L3S-1d/day/2022/20220113032000-ABOM-L3S_GHRSST-SSTskin-AVHRR_D-1d_day.nc'
-    object_key = 'IMOS/SST/updated/out.nc'  # this file has doubled sea_surface_temperature values
-    bucket = 'vhnguyen'
+    bucket = 'imos-data'
+    # object_key = 'IMOS/SRS/SST/ghrsst/L3S-1d/day/2022/20220317032000-ABOM-L3S_GHRSST-SSTskin-AVHRR_D-1d_day.nc'
+    object_key = 'IMOS/SRS/SST/ghrsst/L3S-1d/day/2022/20220113032000-ABOM-L3S_GHRSST-SSTskin-AVHRR_D-1d_day.nc'
+    # object_key = 'IMOS/SST/updated/out.nc'  # this file has doubled sea_surface_temperature values
+    # bucket = 'vhnguyen'
     event_name = 'ObjectCreated'
     update_zarr_store(bucket, object_key, event_name)

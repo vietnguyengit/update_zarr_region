@@ -84,16 +84,18 @@ class Argo(collections.Dataset):
     def _get_dim_value(self, ds: xr.Dataset) -> str:
         return ds.DC_REFERENCE.values[0]
 
-    def get_region_index(self, zarr_store: fsspec.FSMap, file_ds: xr.Dataset) -> Union[dict[str, slice], None]:
+    def get_zarr_region(self, zarr_store: fsspec.FSMap, file_ds: xr.Dataset) -> Union[dict[str, slice], None]:
         zarr_ds = xr.open_zarr(zarr_store)
-        try:
-            self.logger.info(f"identifying region index of the NetCDF if it's previously ingested to Zarr store")
-            idx = np.argmax(zarr_ds.DC_REFERENCE.values == self._get_dim_value(file_ds))
+        self.logger.info(f"identifying region index of the NetCDF if it's previously ingested to Zarr store")
+        idx = np.argmax(zarr_ds.DC_REFERENCE.values == self._get_dim_value(file_ds))
+        # argmax doesn't throw error or -1, false positive idx=0 can occur
+        if idx == 0:
+            if zarr_ds.DC_REFERENCE[idx].values[0] != self._get_dim_value(file_ds):
+                return None
+        else:
             self.logger.info(f"region index: {idx}")
             dict_obj = {"N_PROF": slice(idx, idx + 1)}
             return dict_obj
-        except:
-            return None
 
     def generate_empty_ds(self, file_ds: xr.Dataset) -> xr.Dataset:
         ds = xr.Dataset({var: xr.DataArray(None,

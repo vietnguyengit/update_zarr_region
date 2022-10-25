@@ -7,9 +7,9 @@ from prefect import task
 
 
 @task
-def is_first_write(STORE_PATH):
+def is_first_write(store_path: str):
     try:
-        xr.open_zarr(STORE_PATH, consolidated=True)
+        xr.open_zarr(store_path, consolidated=True)
         first_write = False
     except:
         first_write = True

@@ -35,18 +35,20 @@ class SST(collections.Dataset):
     def _get_dim_value(self, ds: xr.Dataset) -> str:
         return ds.time.values[0]
 
-    def get_region_index(self, zarr_store: fsspec.FSMap, file_ds: xr.Dataset) -> Union[dict[str, slice], None]:
+    def get_zarr_region(self, zarr_store: fsspec.FSMap, file_ds: xr.Dataset) -> Union[dict[str, slice], None]:
         zarr_ds = xr.open_zarr(zarr_store)
-        try:
-            self.logger.info(f"identifying region index of the NetCDF if it's previously ingested to Zarr store")
-            idx = np.argmax(zarr_ds.time.values == self._get_dim_value(file_ds))
+        self.logger.info(f"identifying region index of the NetCDF if it's previously ingested to Zarr store")
+        idx = np.argmax(zarr_ds.time.values == self._get_dim_value(file_ds))
+        if idx == 0:
+            # argmax doesn't throw error or -1, false positive idx=0 can occur
+            if zarr_ds.time[idx].values != self._get_dim_value(file_ds):
+                return None
+        else:
             self.logger.info(f"region index: {idx}")
             dict_obj = {"time": slice(idx, idx + 1),  # only process 1 file at a time
                         "lat": slice(0, file_ds.dims['lat']),
                         "lon": slice(0, file_ds.dims['lon'])}
             return dict_obj
-        except:
-            return None
 
     def generate_empty_ds(self, file_ds: xr.Dataset) -> xr.Dataset:
         ds = xr.Dataset({var: xr.DataArray(None,
