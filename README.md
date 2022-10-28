@@ -1,5 +1,76 @@
 [![Automate ECR image build steps](https://github.com/vietnguyengit/update_zarr_region/actions/workflows/ecr-build.yml/badge.svg)](https://github.com/vietnguyengit/update_zarr_region/actions/workflows/ecr-build.yml)
 
-# update_zarr_region
-POC pipeline to update a region of a zarr store, running from AWS Lambda
+# Update Zarr store pipeline
+POC pipeline to update a region of a zarr store, running from AWS Lambda and integrated with Prefect
 
+#### Notes: the Zarr stores used are subsets of the actual big ones that we have for experimental purposes.
+
+The subsets contain aggregated data of multiple NetCDF files (in smaller amounts) into Zarr stores, which is good enough to demonstrate how a Zarr store's regions can be updated.
+
+---
+
+#### :books: More details are commented inside the relevant code files.
+
+#### :bar_chart: Pipeline run's effects (`appending new data`, `overwriting with new data`, `overwriting with empty data`) on the Zarr stores (`SST`, `Argo`) are demonstrated in a separated Jupyter notebook.
+
+#### Concerned about writing/appending files in chronological order?
+
+https://aws.amazon.com/premiumsupport/knowledge-center/lambda-sqs-scaling
+
+> The maximum batch size for a standard Amazon SQS queue is 10,000 records. For FIFO queues, the maximum batch size is 10 records.
+
+SQS FIFO was implemented but limited to 10 messages in a single batch, uploading lots of files will get the order we don't expect, see more: https://aws.amazon.com/blogs/compute/new-for-aws-lambda-sqs-fifo-as-an-event-source/
+
+SQS standard queue doesn't guarantee order:
+
+> Standard queues provide best-effort ordering
+
+---
+
+### How do serverless services connect to each other?
+
+![update_zarr_Region drawio (2)](https://user-images.githubusercontent.com/26201635/198423280-f34d2838-f0db-4ab1-a43c-8565b6f2b96e.png)
+
+- Raw bucket is `update-zarr-region-raw`, when a NetCDF file being removed or uploaded to this bucket, it'll invoke ~~the Lambda function `UpdateZarrRegionS3Watch` that sends event details as a message to a SQS FIFO Queue.~~ the pipeline, which is a Lambda function `UpdateZarrRegion` ~~subscribes to the SQS FIFO queue and invoked when receiving new messages.~~ to process the file.
+
+- The pipeline powered by Prefect, is deployed by an image hosted on an AWS ECR private repository.
+
+- New GitHub code commits will trigger Github Actions to automatically build and push the latest image to ECR repository.
+
+- Untagged images (older images) will be cleaned up by an ECR Lifecycle policy settings.
+
+- An AWS CodePipeline entity watches the ECR repository changes and invokes a generic Lambda function (`UpdateLambdaFunctionCode`) that refreshes the pipeline with latest ECR image to make sure upcoming invocations will run with latest code changes.
+
+---
+
+### What do the pipeline invocations look like?
+
+Batch of multiple files uploaded/removed will trigger multiple Lambda processes running in parallel as Lambda is a distributed system.
+
+#### At high-level:
+
+![logics drawio](https://user-images.githubusercontent.com/26201635/198423340-31db0cbc-37ad-469e-9fb4-405563ddcf05.png)
+
+#### Prefect UI:
+
+![image](https://user-images.githubusercontent.com/26201635/198177692-c8daff39-94e3-4834-ab1f-d45f30449e19.png)
+
+#### Why EFS here?
+
+We need to use `zarr.sync.ProcessSynchronizer(path)` to ensure write consistency and avoid data corruptions.
+
+* Zarr Docs:
+
+  https://zarr.readthedocs.io/en/stable/api/sync.html
+
+  > Path to a directory on a file system that is shared by all processes. N.B., this should be a different path to where you store the array.
+
+  Mutilple Lambda invocations need to access a shared directory to update and look for Zarr sync files while writing actual data to **S3** Zarr store. `EFS` provides this feature out-of-the-box, **NO** "hackaround" here as EFS is specically designed for this purpose.
+
+* AWS Docs:
+
+  https://aws.amazon.com/blogs/compute/using-amazon-efs-for-aws-lambda-in-your-serverless-applications/
+
+  > Amazon EFS is a fully managed, elastic, shared file system designed to be consumed by other AWS services, such as Lambda. With the release of Amazon EFS for Lambda, you can now easily share data across function invocations.
+
+  > Multiple compute instances, including ... AWS Lambda, can access an Amazon EFS file system at the same time, providing a common data source for workloads

@@ -1,0 +1,18 @@
+{
+  "datasets" : [
+    {
+      "name": "SRS SST",
+      "handler": "process_sst",
+      "regex": [
+        "^(IMOS\\/SRS\\/SST\\/.*\\/*.nc)$"
+      ]
+    },
+    {
+      "name": "ARGO",
+      "handler": "process_argo",
+      "regex": [
+        "^(IMOS\\/Argo\\/.*\\/*.nc)$"
+      ]
+    }
+  ]
+}
