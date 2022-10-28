@@ -5,6 +5,7 @@ import zarr
 import json
 import boto3
 import fsspec
+import numcodecs
 import xarray as xr
 from typing import Callable, Union
 from prefect import task, get_run_logger
@@ -12,7 +13,7 @@ from toolkits.handlers.argo.handler import Argo
 from toolkits.handlers.sst.handler import SST
 
 
-zarr.blosc.use_threads = False
+numcodecs.blosc.use_threads = False
 SYNC_PATH = "/mnt/lambda-efs/update_zarr_region.sync"
 PIPELINE_MASKS_JSON = 'handler_masks.json'
 pipeline_handlers = {
