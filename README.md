@@ -74,3 +74,17 @@ We need to use `zarr.sync.ProcessSynchronizer(path)` to ensure write consistency
   > Amazon EFS is a fully managed, elastic, shared file system designed to be consumed by other AWS services, such as Lambda. With the release of Amazon EFS for Lambda, you can now easily share data across function invocations.
 
   > Multiple compute instances, including ... AWS Lambda, can access an Amazon EFS file system at the same time, providing a common data source for workloads
+  
+ ## Conclusion
+ 
+- Update Zarr store regions is doable when ingested NetCDF files in `raw` bucket removed or updated, as long as there are no other processs writing data to the Zarr stores, even `ProcessSynchronizer()` applied on a distributed system like Lambda. 
+
+- How to do it in large scale is a topic to discuss further, processing multiple files in order 1-by-1 in the same process is a safe approach.
+
+- Updating a region requires to process one file only per transaction, it helps identify which regions to be updated correctly. E.g Zarr store with 5 regions: [1, 2, 3, 4, 5], imagine only [2,5] to be updated, concatinated datasets of [2,5] cannot help identifying appropriate region, only if we want to overwrite all regions sitting next to each other, start from [2] and stop at [5]: [2,3,4,5], but this is not ideal, what if the Zarr stores has 5000 regions and only [100] and [4001] need to be updated? - Stick with processing 1 file per transaction is a safe approach.
+
+- Appending new files coming in a batch can be done with multiple files per transaction. Just because we can, we should?
+
+- Event-driven with Lambda that triggering by every single file to start a process writing to Zarr will cause messy results even the processes have shared access to Synchronizer files on EFS. 
+
+- Consider aggregating data pipelines to Zarr to be on scheduled flows OR some hackaround methods to let the pipelines wait until receiving enough files, eg. wait until receiving 100 files then firing the flows, while there's a processing writing to Zarr, block other processes. If do this way, investigate how to check if there is an existing process writing to Zarr store?
