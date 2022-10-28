@@ -89,7 +89,7 @@ Multi-dimensions data of different data collections may have different implement
 
 Then update `handler_masks.json` with new data collection handler package information including the `Regex` pattern of the S3 `object_key`.
 
-And finally, import new handler package to `utils.py`.
+And finally, import new handler package to `utils.py`, methods in this file are wrapped with `Prefect` task decorator and are generic.
 
 ---
 
