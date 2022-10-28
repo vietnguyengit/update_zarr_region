@@ -17,7 +17,7 @@ CHUNK_SHAPE = {
     "N_PROF": 500,
     "N_LEVELS": 800
 }
-SOURCE_PATH = 's3://imos-data/IMOS/Argo/dac/csiro/*/profiles/*.nc'
+SOURCE_PATH = 's3://imos-data/IMOS/Argo/dac/csiro/1901126/profiles/*.nc'
 LOCAL_STORE_PATH = './local_store/argo_new'
 S3_STORE_PATH = 's3://imos-data-lab-optimised/4428/argo'
 FILES_PER_CHUNK = 500
@@ -144,7 +144,7 @@ def get_essentials(source_path, store_type="s3", anon=False):
     input_paths.extend(['s3://' + path for path in glob_result])
     all_chunked_paths = list(
         chunks(input_paths, FILES_PER_CHUNK))  # indicates how many files should go into a single chunk
-    all_chunked_paths = all_chunked_paths[25:26]
+    # all_chunked_paths = all_chunked_paths[25:26]
     return store_path, store, all_chunked_paths
 
 
@@ -161,6 +161,7 @@ async def dask_argo_zarr(store_type="s3"):
     cluster, client = create_dask_cluster()
     print(f"🌐 Dask Dashboard: {client.dashboard_link}")
     store_path, store, all_chunked_paths = get_essentials(SOURCE_PATH)
+    # print(all_chunked_paths[0][1], all_chunked_paths[0][60], all_chunked_paths[0][150],)
     print("🚀 Completed getting essentials variables")
     start_time = time.time()
     for i in tqdm(range(len(all_chunked_paths))):
