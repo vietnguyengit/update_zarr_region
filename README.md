@@ -83,7 +83,13 @@ Go to `toolkits/handlers` and create a new package for new data collection. 3 fi
 
 - `__init__py` with empty content.
 - `config.json` where you store information of the data collection essential information such as Zarr store path, constants, dimensions, chunks etc.
-- `handler.py` which takes abstract class `Dataset` as a parameter. Multi-dimensions data of different data collections may have different implementations to locate a Zarr store's region, generate empty dataset, and so on. For example, you really CANNOT make the implementations for ARGO to be generic and applicable for other collections such as SST, they have completely different structures.
+- `handler.py` takes abstract class `Dataset` as a parameter, you'll need to provide specific implementations depends on the data collections to the abstract methods.
+
+Multi-dimensions data of different data collections may have different implementations to locate a Zarr store's region, generate empty dataset, and so on. For example, you really CANNOT make the implementations for ARGO to be generic and applicable for other collections such as SST, they have completely different structures.
+
+Then update `handler_masks.json` with new data collection handler package information including the `Regex` pattern of the S3 `object_key`.
+
+And finally, import new handler package to `utils.py`.
 
 ---
 
