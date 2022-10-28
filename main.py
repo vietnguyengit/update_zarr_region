@@ -24,11 +24,12 @@ def update_zarr_store(bucket: str, object_key: str, event_name: str):
         # this update_zarr_region pipeline which processes 1 file per call should really just do two things:
         # 1. append new dataset to existing Zarr store if a NetCDF file hasn't been ingested.
         # 2. overwrite a region (with or without new data) of existing Zarr store if a NetCDF file already been ingested.
-        # raise ValueError("Zarr store is pre-generated, pipeline runs shouldn't reach here!")
 
-        logger.info(f"writing the NetCDF file to the Zarr store")
-        with tags('write new zarr store'):
-            write_zarr(zarr_store, file_ds)
+        raise ValueError("Zarr store is pre-generated, pipeline runs shouldn't reach here!")
+
+        # logger.info(f"writing the NetCDF file to the Zarr store")
+        # with tags('write new zarr store'):
+        #     write_zarr(zarr_store, file_ds)
     else:
         region = dataset.get_zarr_region(zarr_store, file_ds)
         if region is not None:
