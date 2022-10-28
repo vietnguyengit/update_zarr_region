@@ -6,7 +6,6 @@ import xarray as xr
 from typing import Union
 from .. import collections
 
-
 dir_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(dir_path, 'config.json'), 'r') as config_file:
     config_data = json.load(config_file)
@@ -51,12 +50,8 @@ class SST(collections.Dataset):
             return dict_obj
 
     def generate_empty_ds(self, file_ds: xr.Dataset) -> xr.Dataset:
-        ds = xr.Dataset({var: xr.DataArray(None,
-                                           {'time': file_ds.time.values,
-                                            'lat': range(file_ds.dims['lat']),
-                                            'lon': range(file_ds.dims['lon'])},
-                                           dims=self.dims)
-                         for var in set(file_ds.data_vars) - set(self.dims)})
+        ds = file_ds.assign({var: file_ds[var].where(file_ds[var] == None, None)
+                             for var in set(file_ds.data_vars) - {'time'}})
         return ds
 
     def get_store_path(self):

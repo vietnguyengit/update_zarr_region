@@ -57,7 +57,7 @@ Batch of multiple files uploaded/removed will trigger multiple Lambda processes 
 
 #### Why EFS here?
 
-We need to use `zarr.sync.ProcessSynchronizer(path)` to ensure write consistency and avoid data corruptions.
+We need to use `zarr.sync.ProcessSynchronizer(path)` to HOPEFULLY ensure write consistency and avoid data corruptions.
 
 * Zarr Docs:
 
@@ -74,7 +74,19 @@ We need to use `zarr.sync.ProcessSynchronizer(path)` to ensure write consistency
   > Amazon EFS is a fully managed, elastic, shared file system designed to be consumed by other AWS services, such as Lambda. With the release of Amazon EFS for Lambda, you can now easily share data across function invocations.
 
   > Multiple compute instances, including ... AWS Lambda, can access an Amazon EFS file system at the same time, providing a common data source for workloads
-  
+
+---
+
+### Adding more data collections?
+
+Go to `toolkits/handlers` and create a new package for new data collection. 3 files required:
+
+- `__init__py` with empty content.
+- `config.json` where you store information of the data collection essential information such as Zarr store path, constants, dimensions, chunks etc.
+- `handler.py` which takes abstract class `Dataset` as a parameter. Multi-dimensions data of different data collections may have different implementations to locate a Zarr store's region, generate empty dataset, and so on. For example, you really CANNOT make the implementations for ARGO to be generic and applicable for other collections such as SST, they have completely different structures.
+
+---
+
  ## Conclusion
  
 - Update Zarr store regions is doable when ingested NetCDF files in `raw` bucket removed or updated, as long as there are no other processs writing data to the Zarr stores, even `ProcessSynchronizer()` applied on a distributed system like Lambda. 

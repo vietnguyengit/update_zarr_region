@@ -90,7 +90,7 @@ class Argo(collections.Dataset):
         idx = np.argmax(zarr_ds.DC_REFERENCE.values == self._get_dim_value(file_ds))
         # argmax doesn't throw error or -1, false positive idx=0 can occur
         if idx == 0:
-            if zarr_ds.DC_REFERENCE[idx].values[0] != self._get_dim_value(file_ds):
+            if zarr_ds.DC_REFERENCE[idx].values != self._get_dim_value(file_ds):
                 return None
         else:
             self.logger.info(f"region index: {idx}")
@@ -98,11 +98,8 @@ class Argo(collections.Dataset):
             return dict_obj
 
     def generate_empty_ds(self, file_ds: xr.Dataset) -> xr.Dataset:
-        ds = xr.Dataset({var: xr.DataArray(None,
-                                           {'N_PROF': file_ds.N_PROF.values,
-                                            'N_LEVELS': range(file_ds.dims['N_LEVELS'])},
-                                           dims=self.dims)
-                         for var in set(file_ds.data_vars) - set(self.dims)})
+        ds = file_ds.assign({var: file_ds[var].where(file_ds[var] == None, None)
+                             for var in set(file_ds.data_vars) - {'DC_REFERENCE'}})
         return ds
 
     def get_store_path(self):

@@ -5,3 +5,5 @@ test.py
 personal_stuff/local_store/
 personal_stuff/.ipynb_checkpoints/
 personal_stuff/devops/
+personal_stuff/.local_store/
+.ipynb_checkpoints/

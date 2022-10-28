@@ -91,9 +91,10 @@ def lambda_handler(event, context):
 # FOR LOCAL DEV
 if __name__ == '__main__':
     bucket = 'imos-data'
-    # object_key = 'IMOS/SRS/SST/ghrsst/L3S-1d/day/2022/20220317032000-ABOM-L3S_GHRSST-SSTskin-AVHRR_D-1d_day.nc'
-    object_key = 'IMOS/SRS/SST/ghrsst/L3S-1d/day/2022/20220113032000-ABOM-L3S_GHRSST-SSTskin-AVHRR_D-1d_day.nc'
+    object_key = 'IMOS/SRS/SST/ghrsst/L3S-1d/day/2022/20220317032000-ABOM-L3S_GHRSST-SSTskin-AVHRR_D-1d_day.nc'
+    # object_key = 'IMOS/SRS/SST/ghrsst/L3S-1d/day/2022/20220113032000-ABOM-L3S_GHRSST-SSTskin-AVHRR_D-1d_day.nc'
     # object_key = 'IMOS/SST/updated/out.nc'  # this file has doubled sea_surface_temperature values
+    # object_key = 'IMOS/Argo/dac/csiro/5900027/profiles/D5900027_001.nc'
     # bucket = 'vhnguyen'
-    event_name = 'ObjectCreated'
+    event_name = 'ObjectRemoved'
     update_zarr_store(bucket, object_key, event_name)
